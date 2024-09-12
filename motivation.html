@@ -109,7 +109,40 @@
 
   <!-- Main -->
   <main class="main">
-    
+   <div id="loading">読み込み中...</div>
+
+   <div id="howto" class="howto hidden">
+    <p>
+     ご利用のブラウザは本ツールに対応していません。<br>
+     以下の手順により、セットアップを行ってください。
+    </p>
+
+    <ol>
+     <li>Chrome のバージョンを、バージョン128 以降にアップデートして、再起動します。</li>
+     <li>
+      アドレスバーに<code>chrome://flags</code>と入力して設定画面を開き、以下の2項目を設定します。
+      <ul>
+       <li>Enables optimization guide on deviceの値を<code>Enabled BypassPerfRequirement</code>に設定します。</li>
+       <li><code>Prompt API for Gemini Nano</code>の値を<code>Enabled</code>に設定します。</li>
+      </ul>
+     </li>
+     <li>Chrome を再起動します。</li>
+     <li>
+      Chrome のアドレスバーに<code>chrome://components</code>と入力して設定画面を開き、<code>Optimization Guide On Device Model</code>の「アップデートを確認」をクリックしてしばらく待ちます。LLMのモデルが裏でダウンロードされます。なお、この項目自体が表示されない場合は、以下の手順を踏んでからリトライしてみてください。
+      <ul>
+       <li>ストレージの空き容量が22GB以上あることを確認してください。</li>
+       <li>開発者コンソールを開き、<code>await window.ai.createTextSession();</code>を実行してください（エラーが表示されるはずですが、想定通りです）。</li>
+       <li>Chrome を再起動してください</li>
+      </ul>
+     </li>
+     <li><code>chrome://components</code>の設定画面の中の<code>Optimization Guide On Device Model</code>の横に「バージョン：2024.x.x.x」のような表示が出れば、準備完了です。</li>
+     <li>本ツールを再読み込みしてください。</li>
+    </ol>
+
+    <a class="button" href="https://medium.com/karakuri/karakuri-lm-10%E6%9C%AC%E3%83%8E%E3%83%83%E3%82%AF-%E7%95%AA%E5%A4%96%E7%B7%A8-chrome%E5%86%85%E8%94%B5%E3%81%AE%E3%83%AD%E3%83%BC%E3%82%AB%E3%83%ABllm%E3%81%A7-%E3%81%A9%E3%81%93%E3%81%A7%E3%82%82copilot-%E3%82%92%E4%BD%9C%E3%81%A3%E3%81%A6%E3%81%BF%E3%81%9F-384da92c6080" target="_blank">参考URL</a>
+    <a class="button" href="javascript:location.reload();">再読み込み</a>
+   </div>
+
    <div id="chat_area" class="chat_area hidden">
     <div id="history" class="history"></div>
     <div id="generating" class="generating hidden">生成中...</div>
