@@ -791,7 +791,7 @@
 		width: 95%;
 		max-width: 1200px;
 		height: 100%;
-		background-color: var(--color-chat-background);/*チャット背景色*/
+		background-color: #B4D6DC;/*チャット背景色var(--color-chat-background)*/
 		border: 2px solid var(--color-chat-background);
 		display: flex;
 		flex-direction: column;
@@ -829,8 +829,8 @@
 				&.me
 				{
 					align-self: flex-end;
-					background-color: var(--color-main);/*自分の返答*/
-					color: white;
+					background-color: #8fbc8f;/*自分の返答#B4D6DC #a9a9a9 #00ff00 #8fbc8f*/
+					color: black;
 				}
 			}
 		}
@@ -860,13 +860,23 @@
 				box-sizing: border-box;
 				resize: none;
 			}
-
+			.saisei
+			{
+				flex-shrink: 0;
+				margin-left: var(--spacing-md);
+				padding: var(--spacing-sm) var(--spacing-md);
+				background-color: #87cefa;/*送信ボタンカラー*/
+				color: white;
+				border: none;
+				border-radius: var(--radius-md);
+				cursor: pointer;
+			}
 			.send_button
 			{
 				flex-shrink: 0;
 				margin-left: var(--spacing-md);
 				padding: var(--spacing-sm) var(--spacing-md);
-				background-color: var(--color-main);/*送信ボタンカラー*/
+				background-color: #87cefa;/*送信ボタンカラー*/
 				color: white;
 				border: none;
 				border-radius: var(--radius-md);
