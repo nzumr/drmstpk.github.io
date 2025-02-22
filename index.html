@@ -30,28 +30,24 @@
     <!-- Firebase SDK -->
     <script type="module">
         // Firebase SDK の読み込み
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-storage.js";
 
-        // Firebase 設定
+        // Firebase 設定（コード1の設定）
         const firebaseConfig = {
-            apiKey: "AIzaSyALMq4McACY3sBpkniidMf5NEEQokHewA4",
-            authDomain: "example-fb5dc.firebaseapp.com",
-            projectId: "example-fb5dc",
-            storageBucket: "example-fb5dc.appspot.com",
-            databaseURL: "https://example-fb5dc-default-rtdb.firebaseio.com",
-            messagingSenderId: "1041484623633",
-            appId: "1:1041484623633:web:a4e2c96e3892e6cb1e66b0",
-            measurementId: "G-8GM56GGSBK"
+            apiKey: "AIzaSyDvTy2ZeLzkFddvtyL3CD6mz13XBZw4i7w",
+            authDomain: "image-7d588.firebaseapp.com",
+            databaseURL: "https://image-7d588-default-rtdb.firebaseio.com",
+            projectId: "image-7d588",
+            storageBucket: "image-7d588.firebasestorage.app",
+            messagingSenderId: "22500583815",
+            appId: "1:22500583815:web:a74ab87dbe51b97b814b22",
+            measurementId: "G-M4YEYNEKDV"
         };
 
         // Firebase 初期化
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
-
-        // 設定確認
-        console.log("Firebase Config:", app.options);
-        console.log("Storage Bucket:", storage.app.options.storageBucket);
 
         // HTML要素を取得
         const imageInput = document.getElementById("imageInput");
