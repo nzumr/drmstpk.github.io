@@ -7,9 +7,11 @@
 </head>
 <body>
     <h1>ニックネームと画像を保存・表示</h1>
-    <input type="text" id="nickname" placeholder="ニックネームを入力">
-    <input type="file" id="imageUpload" accept="image/*">
-    <button id="saveButton">保存</button>
+    <form id="uploadForm">
+        <input type="text" id="nickname" placeholder="ニックネームを入力" required>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button type="submit">保存</button>
+    </form>
     <button id="showButton">表示</button>
     <ul id="nicknameList"></ul>
 
@@ -18,6 +20,7 @@
         import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-storage.js";
 
+        // Firebaseの設定
         const firebaseConfig = {
             apiKey: "AIzaSyDvTy2ZeLzkFddvtyL3CD6mz13XBZw4i7w",
             authDomain: "image-7d588.firebaseapp.com",
@@ -29,15 +32,18 @@
             measurementId: "G-M4YEYNEKDV"
         };
 
+        // Firebaseの初期化
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
         const nicknameRef = ref(db, "nicknames");
 
-        document.getElementById("saveButton").addEventListener("click", async () => {
+        // フォーム送信（保存処理）
+        document.getElementById("uploadForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
             const nickname = document.getElementById("nickname").value.trim();
             const imageFile = document.getElementById("imageUpload").files[0];
-            
+
             if (!nickname) {
                 alert("ニックネームを入力してください。");
                 return;
@@ -45,27 +51,42 @@
 
             let imageUrl = "";
             if (imageFile) {
-                const imageRef = storageRef(storage, `images/${imageFile.name}`);
-                await uploadBytes(imageRef, imageFile);
-                imageUrl = await getDownloadURL(imageRef);
+                try {
+                    const uniqueName = `${Date.now()}_${imageFile.name}`;
+                    const imageRef = storageRef(storage, `images/${uniqueName}`);
+                    await uploadBytes(imageRef, imageFile);
+                    imageUrl = await getDownloadURL(imageRef);
+                } catch (error) {
+                    console.error("画像のアップロードに失敗しました:", error);
+                    alert("画像のアップロードに失敗しました。");
+                    return;
+                }
             }
 
-            push(nicknameRef, { nickname, imageUrl }).then(() => {
-                alert("ニックネームと画像を保存しました！");
-                document.getElementById("nickname").value = "";
-                document.getElementById("imageUpload").value = "";
-            });
+            // Firebase Realtime Databaseに保存
+            push(nicknameRef, { nickname, imageUrl })
+                .then(() => {
+                    alert("ニックネームと画像を保存しました！");
+                    document.getElementById("uploadForm").reset();
+                })
+                .catch((error) => {
+                    console.error("データの保存に失敗しました:", error);
+                    alert("データの保存に失敗しました。");
+                });
         });
 
+        // データ表示処理
         document.getElementById("showButton").addEventListener("click", () => {
             get(nicknameRef).then((snapshot) => {
                 const nicknameList = document.getElementById("nicknameList");
-                nicknameList.innerHTML = "";
+                nicknameList.innerHTML = ""; // リストをクリア
+
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const data = childSnapshot.val();
                         const li = document.createElement("li");
                         li.textContent = data.nickname;
+
                         if (data.imageUrl) {
                             const img = document.createElement("img");
                             img.src = data.imageUrl;
@@ -73,11 +94,15 @@
                             img.style.display = "block";
                             li.appendChild(img);
                         }
+
                         nicknameList.appendChild(li);
                     });
                 } else {
                     nicknameList.innerHTML = "<li>ニックネームがありません。</li>";
                 }
+            }).catch((error) => {
+                console.error("データの取得に失敗しました:", error);
+                alert("データの取得に失敗しました。");
             });
         });
     </script>
