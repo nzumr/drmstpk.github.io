@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ニックネーム保存</title>
+    <title>ニックネームと画像保存</title>
 </head>
 <body>
-    <h1>ニックネームを保存・表示</h1>
+    <h1>ニックネームと画像を保存・表示</h1>
     <input type="text" id="nickname" placeholder="ニックネームを入力">
+    <input type="file" id="imageUpload" accept="image/*">
     <button id="saveButton">保存</button>
     <button id="showButton">表示</button>
     <ul id="nicknameList"></ul>
@@ -15,13 +16,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
         import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDvTy2ZeLzkFddvtyL3CD6mz13XBZw4i7w",
             authDomain: "image-7d588.firebaseapp.com",
             databaseURL: "https://image-7d588-default-rtdb.firebaseio.com",
             projectId: "image-7d588",
-            storageBucket: "image-7d588.firebasestorage.app",
+            storageBucket: "image-7d588.appspot.com",
             messagingSenderId: "22500583815",
             appId: "1:22500583815:web:a74ab87dbe51b97b814b22",
             measurementId: "G-M4YEYNEKDV"
@@ -29,18 +31,30 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const storage = getStorage(app);
         const nicknameRef = ref(db, "nicknames");
 
-        document.getElementById("saveButton").addEventListener("click", () => {
+        document.getElementById("saveButton").addEventListener("click", async () => {
             const nickname = document.getElementById("nickname").value.trim();
-            if (nickname) {
-                push(nicknameRef, nickname).then(() => {
-                    alert("ニックネームを保存しました！");
-                    document.getElementById("nickname").value = "";
-                });
-            } else {
+            const imageFile = document.getElementById("imageUpload").files[0];
+            
+            if (!nickname) {
                 alert("ニックネームを入力してください。");
+                return;
             }
+
+            let imageUrl = "";
+            if (imageFile) {
+                const imageRef = storageRef(storage, `images/${imageFile.name}`);
+                await uploadBytes(imageRef, imageFile);
+                imageUrl = await getDownloadURL(imageRef);
+            }
+
+            push(nicknameRef, { nickname, imageUrl }).then(() => {
+                alert("ニックネームと画像を保存しました！");
+                document.getElementById("nickname").value = "";
+                document.getElementById("imageUpload").value = "";
+            });
         });
 
         document.getElementById("showButton").addEventListener("click", () => {
@@ -49,8 +63,16 @@
                 nicknameList.innerHTML = "";
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
+                        const data = childSnapshot.val();
                         const li = document.createElement("li");
-                        li.textContent = childSnapshot.val();
+                        li.textContent = data.nickname;
+                        if (data.imageUrl) {
+                            const img = document.createElement("img");
+                            img.src = data.imageUrl;
+                            img.style.maxWidth = "100px";
+                            img.style.display = "block";
+                            li.appendChild(img);
+                        }
                         nicknameList.appendChild(li);
                     });
                 } else {
