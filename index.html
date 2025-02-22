@@ -3,82 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase 画像アップロード</title>
+    <title>ニックネーム保存</title>
 </head>
 <body>
-    <h2>画像アップロード</h2>
-    <input type="file" id="fileInput">
-    <button onclick="uploadImage()">アップロード</button>
-    <br><br>
-    <button onclick="displayImages()">画像を表示</button>
-    <div id="imageContainer"></div>
+    <h1>ニックネームを保存・表示</h1>
+    <input type="text" id="nickname" placeholder="ニックネームを入力">
+    <button id="saveButton">保存</button>
+    <button id="showButton">表示</button>
+    <ul id="nicknameList"></ul>
 
-    <!-- Firebase SDK -->
     <script type="module">
-        // Firebaseのインポート
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-storage.js";
+        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 
-        // Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyDvTy2ZeLzkFddvtyL3CD6mz13XBZw4i7w",
             authDomain: "image-7d588.firebaseapp.com",
             databaseURL: "https://image-7d588-default-rtdb.firebaseio.com",
             projectId: "image-7d588",
-            storageBucket: "image-7d588.appspot.com",  // 修正
+            storageBucket: "image-7d588.firebasestorage.app",
             messagingSenderId: "22500583815",
             appId: "1:22500583815:web:a74ab87dbe51b97b814b22",
             measurementId: "G-M4YEYNEKDV"
         };
 
-        // Firebase 初期化
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+        const db = getDatabase(app);
+        const nicknameRef = ref(db, "nicknames");
 
-        // 画像アップロード
-        async function uploadImage() {
-            const file = document.getElementById('fileInput').files[0];
-            if (!file) {
-                alert("ファイルを選択してください");
-                return;
-            }
-
-            const storageRef = ref(storage, 'images/' + file.name);
-
-            try {
-                // Firebase Storage にアップロード
-                await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
-
-                // Firestore にURLを保存
-                await addDoc(collection(db, "images"), { url: downloadURL });
-
-                alert("画像がアップロードされました！");
-            } catch (error) {
-                console.error("エラー:", error);
-            }
-        }
-
-        // 画像を表示
-        async function displayImages() {
-            const imageContainer = document.getElementById("imageContainer");
-            imageContainer.innerHTML = ""; // クリア
-
-            try {
-                const querySnapshot = await getDocs(collection(db, "images"));
-                querySnapshot.forEach((doc) => {
-                    const img = document.createElement("img");
-                    img.src = doc.data().url;
-                    img.width = 200;
-                    img.style.margin = "10px";
-                    imageContainer.appendChild(img);
+        document.getElementById("saveButton").addEventListener("click", () => {
+            const nickname = document.getElementById("nickname").value.trim();
+            if (nickname) {
+                push(nicknameRef, nickname).then(() => {
+                    alert("ニックネームを保存しました！");
+                    document.getElementById("nickname").value = "";
                 });
-            } catch (error) {
-                console.error("エラー:", error);
+            } else {
+                alert("ニックネームを入力してください。");
             }
-        }
+        });
+
+        document.getElementById("showButton").addEventListener("click", () => {
+            get(nicknameRef).then((snapshot) => {
+                const nicknameList = document.getElementById("nicknameList");
+                nicknameList.innerHTML = "";
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const li = document.createElement("li");
+                        li.textContent = childSnapshot.val();
+                        nicknameList.appendChild(li);
+                    });
+                } else {
+                    nicknameList.innerHTML = "<li>ニックネームがありません。</li>";
+                }
+            });
+        });
     </script>
 </body>
 </html>
