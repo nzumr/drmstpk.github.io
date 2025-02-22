@@ -30,12 +30,14 @@
     <script type="module">
         // Firebase SDK の読み込み
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyALMq4McACY3sBpkniidMf5NEEQokHewA4",
             authDomain: "example-fb5dc.firebaseapp.com",
+            databaseURL: "https://example-fb5dc-default-rtdb.firebaseio.com",
             projectId: "example-fb5dc",
             storageBucket: "example-fb5dc.appspot.com", // 修正済み
             messagingSenderId: "1041484623633",
@@ -45,6 +47,7 @@
 
         // Firebase 初期化
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const storage = getStorage(app);
 
         // HTML要素を取得
