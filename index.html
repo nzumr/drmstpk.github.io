@@ -39,4 +39,79 @@
             authDomain: "example-fb5dc.firebaseapp.com",
             projectId: "example-fb5dc",
             storageBucket: "example-fb5dc.appspot.com",
-            databaseURL: "https://example-fb5dc-default-rtdb.firebaseio.com", // 修正済
+            databaseURL: "https://example-fb5dc-default-rtdb.firebaseio.com", // 修正済み
+            messagingSenderId: "1041484623633",
+            appId: "1:1041484623633:web:a4e2c96e3892e6cb1e66b0",
+            measurementId: "G-8GM56GGSBK"
+        };
+
+        // Firebase 初期化
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // HTML要素を取得
+        const imageInput = document.getElementById("imageInput");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const previewImage = document.getElementById("preview");
+        const statusText = document.getElementById("status");
+        const progressBar = document.getElementById("progressBar");
+
+        // 画像選択時のプレビュー表示
+        imageInput.addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 画像アップロード処理
+        uploadBtn.addEventListener("click", async function() {
+            const file = imageInput.files[0];
+            if (!file) {
+                alert("画像を選択してください");
+                return;
+            }
+
+            const storageRef = ref(storage, `images/${file.name}`);
+            const metadata = { contentType: file.type };
+            const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+
+            // プログレスバーの表示
+            progressBar.style.display = "block";
+            statusText.innerText = "アップロード中...";
+
+            // アップロードの進捗を監視
+            uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.value = progress;
+                    statusText.innerText = `アップロード中... ${Math.round(progress)}%`;
+                },
+                (error) => {
+                    console.error("アップロード失敗", error);
+                    statusText.innerText = "アップロードに失敗しました";
+                },
+                async () => {
+                    try {
+                        // 画像の URL を取得
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        previewImage.src = downloadURL;
+                        previewImage.style.display = "block";
+                        statusText.innerText = "アップロード完了！";
+                        console.log("画像URL:", downloadURL);
+                    } catch (error) {
+                        console.error("URL 取得失敗", error);
+                        statusText.innerText = "URL の取得に失敗しました";
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>
