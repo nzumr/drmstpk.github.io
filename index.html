@@ -15,7 +15,6 @@
             max-width: 100%;
             height: auto;
             display: none;
-            filter: grayscale(100%); /* アップロード中はグレーアウト */
         }
     </style>
 </head>
@@ -30,6 +29,7 @@
 
     <!-- Firebase SDK -->
     <script type="module">
+        // Firebase SDK の読み込み
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -49,7 +49,11 @@
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
-        // HTML要素取得
+        // 設定確認
+        console.log("Firebase Config:", app.options);
+        console.log("Storage Bucket:", storage.app.options.storageBucket);
+
+        // HTML要素を取得
         const imageInput = document.getElementById("imageInput");
         const uploadBtn = document.getElementById("uploadBtn");
         const previewImage = document.getElementById("preview");
@@ -57,21 +61,20 @@
         const progressBar = document.getElementById("progressBar");
 
         // 画像選択時のプレビュー表示
-        imageInput.addEventListener("change", (event) => {
+        imageInput.addEventListener("change", function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = function(e) {
                     previewImage.src = e.target.result;
                     previewImage.style.display = "block";
-                    previewImage.style.filter = "grayscale(100%)"; // アップロード中はグレーアウト
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // アップロード処理
-        uploadBtn.addEventListener("click", async () => {
+        // 画像アップロード処理
+        uploadBtn.addEventListener("click", async function() {
             const file = imageInput.files[0];
             if (!file) {
                 alert("画像を選択してください");
@@ -82,12 +85,11 @@
             const metadata = { contentType: file.type };
             const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
-            // プログレスバー表示
+            // プログレスバーの表示
             progressBar.style.display = "block";
-            progressBar.value = 0;
             statusText.innerText = "アップロード中...";
 
-            // **アップロードの進捗を監視**
+            // アップロードの進捗を監視
             uploadTask.on(
                 "state_changed",
                 (snapshot) => {
@@ -98,26 +100,18 @@
                 (error) => {
                     console.error("アップロード失敗", error);
                     statusText.innerText = "アップロードに失敗しました";
-                    alert("アップロード中にエラーが発生しました。");
                 },
                 async () => {
                     try {
-                        // **アップロード完了後の処理**
+                        // 画像の URL を取得
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                         previewImage.src = downloadURL;
                         previewImage.style.display = "block";
-                        previewImage.style.filter = "none"; // アップロード完了後、通常表示
                         statusText.innerText = "アップロード完了！";
                         console.log("画像URL:", downloadURL);
-
-                        // プログレスバーを1秒後に非表示
-                        setTimeout(() => {
-                            progressBar.style.display = "none";
-                        }, 1000);
                     } catch (error) {
                         console.error("URL 取得失敗", error);
                         statusText.innerText = "URL の取得に失敗しました";
-                        alert("画像のURL取得に失敗しました。");
                     }
                 }
             );
