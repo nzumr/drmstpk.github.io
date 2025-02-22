@@ -3,25 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>履歴書</title>
-    <link rel="stylesheet" href="resume.css">
+    <title>Firebase 画像アップロード</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #preview {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>履歴書</h1>
+    <h2>画像をアップロード</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="uploadBtn">アップロード</button>
+    <br>
+    <img id="preview" src="" alt="画像プレビュー">
+    <p id="status"></p>
 
-    <div class="section">
-        <label for="motivation">志望動機</label><br>
-        <textarea id="motivation" name="motivation" rows="5" cols="40" placeholder="志望動機を入力してください"></textarea>
-    </div>
-    <a href="motivation.html" target="_blank">
-        <button>AIの補助ツールを使って文章作成</button>
-    </a>
-    <div class="section">
-        <label for="selfPR">自己PR</label><br>
-        <textarea id="selfPR" name="selfPR" rows="5" cols="40" placeholder="自己PRを入力してください"></textarea>
-    </div>
-    <a href="PR.html" target="_blank">
-        <button>AIの補助ツールを使って文章作成</button>
-    </a>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase SDK の読み込み
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // Firebase 設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyALMq4McACY3sBpkniidMf5NEEQokHewA4",
+            authDomain: "example-fb5dc.firebaseapp.com",
+            projectId: "example-fb5dc",
+            storageBucket: "example-fb5dc.appspot.com", // 修正済み
+            messagingSenderId: "1041484623633",
+            appId: "1:1041484623633:web:a4e2c96e3892e6cb1e66b0",
+            measurementId: "G-8GM56GGSBK"
+        };
+
+        // Firebase 初期化
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // HTML要素を取得
+        const imageInput = document.getElementById("imageInput");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const previewImage = document.getElementById("preview");
+        const statusText = document.getElementById("status");
+
+        // 画像選択時のプレビュー表示
+        imageInput.addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 画像アップロード処理
+        uploadBtn.addEventListener("click", async function() {
+            const file = imageInput.files[0];
+            if (!file) {
+                alert("画像を選択してください");
+                return;
+            }
+
+            const storageRef = ref(storage, `images/${file.name}`);
+            statusText.innerText = "アップロード中...";
+
+            try {
+                // Firebase Storage にアップロード
+                await uploadBytes(storageRef, file);
+                console.log("アップロード成功");
+
+                // 画像の URL を取得
+                const downloadURL = await getDownloadURL(storageRef);
+                previewImage.src = downloadURL;
+                previewImage.style.display = "block";
+                statusText.innerText = "アップロード完了！";
+                console.log("画像URL:", downloadURL);
+            } catch (error) {
+                console.error("アップロード失敗", error);
+                statusText.innerText = "アップロードに失敗しました";
+            }
+        });
+    </script>
 </body>
 </html>
